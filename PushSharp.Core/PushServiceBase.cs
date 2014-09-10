@@ -372,7 +372,12 @@ namespace PushSharp.Core
 	        }
 	    }
 
-		private void ScaleChannels(ChannelScaleAction action, int count = 1)
+	    public long TotalSendCount
+	    {
+	        get { return totalSendCount; }
+	    }
+
+	    private void ScaleChannels(ChannelScaleAction action, int count = 1)
 		{
 			//if (stopping)
 			//	return;

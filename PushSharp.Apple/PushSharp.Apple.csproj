@@ -38,9 +38,9 @@
     <AssemblyOriginatorKeyFile>PushSharp-Signing.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.5.0.8\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\packages\Newtonsoft.Json.6.0.4\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -74,7 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PushSharp.Core\PushSharp.Core.csproj">
-      <Project>{836F225F-6CD9-48DE-910C-70F8A7CF54AA}</Project>
+      <Project>{836f225f-6cd9-48de-910c-70f8a7cf54aa}</Project>
       <Name>PushSharp.Core</Name>
     </ProjectReference>
   </ItemGroup>
