@@ -182,7 +182,45 @@ namespace PushSharp.WindowsPhone
 				return;
 			}
 
-			if (callback != null)
+            if (status.HttpStatus == HttpStatusCode.OK
+                && status.NotificationStatus == WPNotificationStatus.Suppressed)
+            {
+                if (callback != null)
+                    callback(this, new SendNotificationResult(notification, suppressed:true));
+                return;
+            }
+
+            if (status.HttpStatus == HttpStatusCode.OK
+                && status.NotificationStatus == WPNotificationStatus.Dropped)
+            {
+                if (callback != null)
+                    callback(this, new SendNotificationResult(notification));
+                return;
+            }
+
+            //  Disconnected Device: he cloud service should continue sending notifications as usual even though those notifications 
+            //  are dropped because when the device returns to Connected status this ensures the notification flow continues to the device.
+            if (status.HttpStatus == HttpStatusCode.PreconditionFailed
+                 && status.NotificationStatus == WPNotificationStatus.Dropped)
+            {
+                if (callback != null)
+                    callback(this, new SendNotificationResult(notification, suppressed: true));
+                return;
+            }
+
+            //  This error occurs when an unauthenticated cloud service has reached the per-day throttling limit for a subscription, 
+            //  or when a cloud service (authenticated or unauthenticated) has sent too many notifications per second. 
+            if (status.HttpStatus == HttpStatusCode.NotAcceptable
+                            && status.NotificationStatus == WPNotificationStatus.Dropped)
+            {
+                if (callback != null)
+                    callback(this, new SendNotificationResult(notification, error:new WindowsPhoneNotificationSendFailureException(status, "This error occurs when an unauthenticated cloud service has reached the per-day throttling limit for a subscription, or when a cloud service (authenticated or unauthenticated) has sent too many notifications per second. ")));
+                return;
+            }	
+            
+
+            
+            if (callback != null)
 				callback(this, new SendNotificationResult(status.Notification, false, new WindowsPhoneNotificationSendFailureException(status)));
 		}
 

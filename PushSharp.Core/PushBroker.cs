@@ -90,10 +90,11 @@ namespace PushSharp
 		{
 			var services = GetRegistrations<TPushNotification> (applicationId);
 
-			if (services == null || !services.Any())
+		    var pushServices = services as IPushService[] ?? services.ToArray();
+		    if (services == null || pushServices.Length==0)
 				throw new IndexOutOfRangeException("There are no Registered Services that handle this type of Notification");
 
-			foreach (var s in services)
+			foreach (var s in pushServices)
 				s.QueueNotification (notification);
 		}
 

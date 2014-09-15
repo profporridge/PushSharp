@@ -7,13 +7,18 @@ namespace PushSharp.Core
 {
 	public class SendNotificationResult
 	{
-		public SendNotificationResult(INotification notification, bool shouldRequeue = false, Exception error = null)
+		public SendNotificationResult(INotification notification, bool shouldRequeue = false, Exception error = null, bool suppressed = false)
 		{
 			this.Notification = notification;
 			this.Error = error;
 			this.ShouldRequeue = shouldRequeue;
 			this.IsSubscriptionExpired = false;
 			this.CountsAsRequeue = true;
+		    if (suppressed)
+		    {
+		        ShouldRequeue = false;
+		        IsNotificationSuppressed = true;
+		    }
 		}
 
 		public INotification Notification { get; set; }
@@ -24,6 +29,7 @@ namespace PushSharp.Core
 		public string NewSubscriptionId { get; set; }
 		public DateTime SubscriptionExpiryUtc { get;set; }
 		public bool IsSubscriptionExpired { get; set; }
+        public bool IsNotificationSuppressed { get; set; }
 		public bool IsSuccess { get { return Error == null; } }
 	}
 }

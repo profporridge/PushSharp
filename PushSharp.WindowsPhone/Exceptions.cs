@@ -7,8 +7,9 @@ namespace PushSharp.WindowsPhone
 {
 	public class WindowsPhoneNotificationSendFailureException : Exception
 	{
-		public WindowsPhoneNotificationSendFailureException(WindowsPhoneMessageStatus msgStatus)
-			: base()
+
+	    public WindowsPhoneNotificationSendFailureException(WindowsPhoneMessageStatus msgStatus, string message = "")
+			: base(message)
 		{
 			this.MessageStatus = msgStatus;
 		}
