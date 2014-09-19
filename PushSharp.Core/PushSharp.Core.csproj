@@ -46,7 +46,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyVersionInfo.cs" />
+    <Compile Include="ConcurrentNotificationQueue.cs" />
     <Compile Include="Exceptions.cs" />
+    <Compile Include="INotificationQueue.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="Notification.cs" />
@@ -55,7 +57,7 @@
     <Compile Include="PushServiceBase.cs" />
     <Compile Include="PushServiceSettings.cs" />
     <Compile Include="SendNotificationResult.cs" />
-    <Compile Include="NotificationQueue.cs" />
+    <Compile Include="ListQueue.cs" />
     <Compile Include="ServiceRegistration.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace PushSharp.Core
 {
-	public class NotificationQueue
+	public class ListQueue : INotificationQueue
 	{
-		public NotificationQueue ()
+		public ListQueue ()
 		{
 			notifications = new List<INotification> ();
 			lockObj = new object ();
@@ -33,7 +33,7 @@ namespace PushSharp.Core
 				notifications.Insert (index, notification);
 		}
 
-		public INotification Dequeue()
+        public INotification Dequeue(bool block = false)
 		{
 			var n = default(INotification);
 

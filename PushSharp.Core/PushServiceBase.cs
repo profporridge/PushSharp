@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -62,8 +63,8 @@ namespace PushSharp.Core
 		int scaleSync;
 		volatile bool stopping;
 		List<ChannelWorker> channels = new List<ChannelWorker>();
-		NotificationQueue queuedNotifications;
-		CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
+		INotificationQueue queuedNotifications;	    
+        CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
 		List<WaitTimeMeasurement> measurements = new List<WaitTimeMeasurement>();
         List<WaitTimeMeasurement> sendTimeMeasurements = new List<WaitTimeMeasurement>();
 		DateTime lastNotificationQueueTime = DateTime.MinValue;
@@ -88,7 +89,7 @@ namespace PushSharp.Core
 			this.ServiceSettings = serviceSettings ?? new PushServiceSettings();
 			this.ChannelSettings = channelSettings;
 
-			this.queuedNotifications = new NotificationQueue();
+			this.queuedNotifications = new ConcurrentNotificationQueue();
 
 			scaleSync = 0;
 
@@ -448,14 +449,14 @@ namespace PushSharp.Core
 
 			while (!cancelTokenSource.IsCancellationRequested)
 			{
-				var notification = queuedNotifications.Dequeue ();
-
+				var notification = queuedNotifications.Dequeue (true);
+			    
 				if (notification == null)
 				{
 					Thread.Sleep(100);
 					continue;
 				}
-
+                Trace.WriteLine("Channel " + id + "procession notification " + notification.GetHashCode());
                 ManualResetEvent waitForNotification = null;
 
                 if (this.BlockOnMessageResult)

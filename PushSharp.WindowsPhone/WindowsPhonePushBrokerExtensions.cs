@@ -28,12 +28,12 @@ namespace PushSharp
 		{
 			var service = new WindowsPhonePushService(new WindowsPhonePushChannelFactory(), channelSettings, serviceSettings);
 
-			broker.RegisterService<WindowsPhoneCycleTileNotification>(service, applicationId);
-			broker.RegisterService<WindowsPhoneFlipTileNotification>(service, applicationId);
-			broker.RegisterService<WindowsPhoneIconicTileNotification>(service, applicationId);
-			broker.RegisterService<WindowsPhoneTileNotification>(service, applicationId);
-			broker.RegisterService<WindowsPhoneToastNotification>(service, applicationId);
-			broker.RegisterService<WindowsPhoneRawNotification>(service, applicationId);
+			broker.RegisterService<WindowsPhoneCycleTileNotification>(service, applicationId, registerEvents:true);
+            broker.RegisterService<WindowsPhoneFlipTileNotification>(service, applicationId, registerEvents: false);
+            broker.RegisterService<WindowsPhoneIconicTileNotification>(service, applicationId, registerEvents: false);
+            broker.RegisterService<WindowsPhoneTileNotification>(service, applicationId, registerEvents: false);
+            broker.RegisterService<WindowsPhoneToastNotification>(service, applicationId, registerEvents: false);
+            broker.RegisterService<WindowsPhoneRawNotification>(service, applicationId, registerEvents: false);
 		}
 
 		public static WindowsPhoneCycleTileNotification WindowsPhoneCycleTileNotification(this PushBroker broker)

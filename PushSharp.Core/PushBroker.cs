@@ -28,35 +28,43 @@ namespace PushSharp
 			serviceRegistrations = new List<ServiceRegistration> ();
 		}
 
-		/// <summary>
-		/// Registers the service to be eligible to handle queued notifications of the specified type
-		/// </summary>
-		/// <param name="pushService">Push service to be registered</param>
-		/// <param name="applicationId">Arbitrary Application identifier to register this service with.  When queueing notifications you can specify the same Application identifier to ensure they get queued to the same service instance </param>
-		/// <param name="raiseErrorOnDuplicateRegistrations">If set to <c>true</c> raises an error if there is an existing registration for the given notification type.</param>
-		/// <typeparam name="TPushNotification">Type of notifications to register the service for</typeparam>
-		public void RegisterService<TPushNotification>(IPushService pushService, string applicationId, bool raiseErrorOnDuplicateRegistrations = true) where TPushNotification : Notification
-		{
-			if (raiseErrorOnDuplicateRegistrations && GetRegistrations<TPushNotification> (applicationId).Any ())
-				throw new InvalidOperationException ("There's already a service registered to handle " + typeof(TPushNotification).Name + " notification types for the Application Id: " + (applicationId ?? "[ANY].  If you want to register the service anyway, pass in the raiseErrorOnDuplicateRegistrations=true parameter to this method."));
+	    /// <summary>
+	    /// Registers the service to be eligible to handle queued notifications of the specified type
+	    /// </summary>
+	    /// <param name="pushService">Push service to be registered</param>
+	    /// <param name="applicationId">Arbitrary Application identifier to register this service with.  When queueing notifications you can specify the same Application identifier to ensure they get queued to the same service instance </param>
+	    /// <param name="raiseErrorOnDuplicateRegistrations">If set to <c>true</c> raises an error if there is an existing registration for the given notification type.</param>
+	    /// <typeparam name="TPushNotification">Type of notifications to register the service for</typeparam>
+	    public void RegisterService<TPushNotification>(IPushService pushService, string applicationId,
+	        bool raiseErrorOnDuplicateRegistrations = true, bool registerEvents = true)
+	        where TPushNotification : Notification
+	    {
+	        if (raiseErrorOnDuplicateRegistrations && GetRegistrations<TPushNotification>(applicationId).Any())
+	            throw new InvalidOperationException("There's already a service registered to handle " +
+	                                                typeof (TPushNotification).Name +
+	                                                " notification types for the Application Id: " +
+	                                                (applicationId ??
+	                                                 "[ANY].  If you want to register the service anyway, pass in the raiseErrorOnDuplicateRegistrations=true parameter to this method."));
 
-			var registration = ServiceRegistration.Create<TPushNotification> (pushService, applicationId);
+	        var registration = ServiceRegistration.Create<TPushNotification>(pushService, applicationId);
 
-			lock (serviceRegistrationsLock)
-				serviceRegistrations.Add (registration);
+	        lock (serviceRegistrationsLock)
+	            serviceRegistrations.Add(registration);
+	        if (registerEvents)
+	        {
+	            pushService.OnChannelCreated += OnChannelCreated;
+	            pushService.OnChannelDestroyed += OnChannelDestroyed;
+	            pushService.OnChannelException += OnChannelException;
+	            pushService.OnDeviceSubscriptionExpired += OnDeviceSubscriptionExpired;
+	            pushService.OnNotificationFailed += OnNotificationFailed;
+	            pushService.OnNotificationSent += OnNotificationSent;
+	            pushService.OnNotificationRequeue += OnNotificationRequeue;
+	            pushService.OnServiceException += OnServiceException;
+	            pushService.OnDeviceSubscriptionChanged += OnDeviceSubscriptionChanged;
+	        }
+	    }
 
-			pushService.OnChannelCreated += OnChannelCreated;
-			pushService.OnChannelDestroyed += OnChannelDestroyed;
-			pushService.OnChannelException += OnChannelException;
-			pushService.OnDeviceSubscriptionExpired += OnDeviceSubscriptionExpired;
-			pushService.OnNotificationFailed += OnNotificationFailed;
-			pushService.OnNotificationSent += OnNotificationSent;
-			pushService.OnNotificationRequeue += OnNotificationRequeue;
-			pushService.OnServiceException += OnServiceException;
-			pushService.OnDeviceSubscriptionChanged += OnDeviceSubscriptionChanged;
-		}
-
-		/// <summary>
+	    /// <summary>
 		/// Registers the service to be eligible to handle queued notifications of the specified type
 		/// </summary>
 		/// <param name="pushService">Push service to be registered</param>
@@ -90,11 +98,10 @@ namespace PushSharp
 		{
 			var services = GetRegistrations<TPushNotification> (applicationId);
 
-		    var pushServices = services as IPushService[] ?? services.ToArray();
-		    if (services == null || pushServices.Length==0)
+			if (services == null || !services.Any())
 				throw new IndexOutOfRangeException("There are no Registered Services that handle this type of Notification");
 
-			foreach (var s in pushServices)
+			foreach (var s in services)
 				s.QueueNotification (notification);
 		}
 
