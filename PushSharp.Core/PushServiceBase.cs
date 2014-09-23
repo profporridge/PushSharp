@@ -456,7 +456,7 @@ namespace PushSharp.Core
 					Thread.Sleep(100);
 					continue;
 				}
-                Trace.WriteLine("Channel " + id + "procession notification " + notification.GetHashCode());
+             //   Trace.TraceInformation("Channel " + id + " processing notification " + notification.GetHashCode());
                 ManualResetEvent waitForNotification = null;
 
                 if (this.BlockOnMessageResult)
