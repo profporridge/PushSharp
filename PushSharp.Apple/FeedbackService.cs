@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -113,7 +114,7 @@ namespace PushSharp.Apple
 					}
 
 				}
-				catch { }
+                catch (Exception ex) { Trace.WriteLine("Apple Feedback Channel exception: " + ex + " @ " + ex.TargetSite + " " + ex.StackTrace); }
 
 				//Clear our array to reuse it
 				Array.Clear(buffer, 0, buffer.Length);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
 using System.Linq;
 using System.Net.Sockets;
@@ -243,18 +244,20 @@ namespace PushSharp.Apple
 								connected = false;
 							}
 						}
-						catch
+						catch (Exception ex )
 						{
-							connected = false;
+						    Trace.WriteLine("Apple Push Channel exception: " + ex + " @ " + ex.TargetSite + " " + ex.StackTrace);
+                            connected = false;
 						}
 
 					} // End Lock
 					
 				}), null);
 			}
-			catch
+			catch ( Exception ex)
 			{
-				connected = false;
+                Trace.WriteLine("Apple Push Channel exception in Reader: " + ex + " @ " + ex.TargetSite + " " + ex.StackTrace);
+                connected = false;
 			}
 		}
 
@@ -488,7 +491,7 @@ namespace PushSharp.Apple
 
 								//Really not sure if this will work on MONO....
 								try { client.SetSocketKeepAliveValues(20 * 60 * 1000, 30 * 1000); }
-								catch { }
+                                catch (Exception ex) { Trace.WriteLine("Apple Push Channel exception on setting socket keepalive " + ex + " @ " + ex.TargetSite + " " + ex.StackTrace); }
 
 								Interlocked.Increment(ref reconnects);
 

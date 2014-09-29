@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -116,7 +117,7 @@ namespace PushSharp.WindowsPhone
 			{
 				resp = webEx.Response as HttpWebResponse;
 			}
-			catch { }
+            catch (Exception ex) { Trace.WriteLine("Windows Channel send unexpected exception: " + ex + " @ " + ex.TargetSite + " " + ex.StackTrace); }
 
 			var status = ParseStatus(resp, wpNotification);
 
