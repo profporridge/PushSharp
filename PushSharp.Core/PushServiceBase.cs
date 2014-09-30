@@ -89,7 +89,7 @@ namespace PushSharp.Core
 			this.ServiceSettings = serviceSettings ?? new PushServiceSettings();
 			this.ChannelSettings = channelSettings;
 
-			this.queuedNotifications = new ConcurrentNotificationQueue();
+			this.queuedNotifications = new ListQueue();
 
 			scaleSync = 0;
 
@@ -456,7 +456,7 @@ namespace PushSharp.Core
 					Thread.Sleep(100);
 					continue;
 				}
-             //   Trace.TraceInformation("Channel " + id + " processing notification " + notification.GetHashCode());
+                Trace.WriteLine("Channel " + id + " processing notification " + notification.GetHashCode());
                 ManualResetEvent waitForNotification = null;
 
                 if (this.BlockOnMessageResult)
