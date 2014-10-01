@@ -114,7 +114,7 @@ namespace PushSharp.Apple
 					}
 
 				}
-                catch (Exception ex) { Trace.WriteLine("Apple Feedback Channel exception: " + ex + " @ " + ex.TargetSite + " " + ex.StackTrace); }
+                catch (Exception ex) { Trace.WriteLine("Apple FEEDBACK channel exception: " + ex + " @ " + ex.TargetSite + " " + ex.StackTrace); }
 
 				//Clear our array to reuse it
 				Array.Clear(buffer, 0, buffer.Length);
