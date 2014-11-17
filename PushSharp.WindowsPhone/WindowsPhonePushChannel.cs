@@ -166,11 +166,18 @@ namespace PushSharp.WindowsPhone
 		}
 		
 		void HandleStatus(SendNotificationCallbackDelegate callback, WindowsPhoneMessageStatus status, WindowsPhoneNotification notification = null)
-		{	
+		{
+			if (callback == null)
+				return;
+
 			if (status.SubscriptionStatus == WPSubscriptionStatus.Expired)
 			{
-				if (callback != null)
-					callback(this, new SendNotificationResult(notification, false, new Exception("Device Subscription Expired")) { IsSubscriptionExpired = true });
+				callback(this, new SendNotificationResult(notification, false, new Exception("Device Subscription Expired"))
+				{
+					IsSubscriptionExpired = true,
+					OldSubscriptionId = notification != null ? notification.EndPointUrl : null,
+					SubscriptionExpiryUtc = DateTime.UtcNow
+				});
 
 				return;
 			}
@@ -178,15 +185,14 @@ namespace PushSharp.WindowsPhone
 			if (status.HttpStatus == HttpStatusCode.OK
 				&& status.NotificationStatus == WPNotificationStatus.Received)
 			{
-				if (callback != null)
-					callback(this, new SendNotificationResult(notification));
+				callback(this, new SendNotificationResult(notification));
+
 				return;
 			}
 
             if (status.HttpStatus == HttpStatusCode.OK
                 && status.NotificationStatus == WPNotificationStatus.Suppressed)
             {
-                if (callback != null)
                     callback(this, new SendNotificationResult(notification, suppressed:true));
                 return;
             }
@@ -194,7 +200,6 @@ namespace PushSharp.WindowsPhone
             if (status.HttpStatus == HttpStatusCode.OK
                 && status.NotificationStatus == WPNotificationStatus.Dropped)
             {
-                if (callback != null)
                     callback(this, new SendNotificationResult(notification));
                 return;
             }
@@ -204,7 +209,6 @@ namespace PushSharp.WindowsPhone
             if (status.HttpStatus == HttpStatusCode.PreconditionFailed
                  && status.NotificationStatus == WPNotificationStatus.Dropped)
             {
-                if (callback != null)
                     callback(this, new SendNotificationResult(notification, suppressed: true));
                 return;
             }
@@ -214,15 +218,13 @@ namespace PushSharp.WindowsPhone
             if (status.HttpStatus == HttpStatusCode.NotAcceptable
                             && status.NotificationStatus == WPNotificationStatus.Dropped)
             {
-                if (callback != null)
                     callback(this, new SendNotificationResult(notification, error:new WindowsPhoneNotificationSendFailureException(status, "This error occurs when an unauthenticated cloud service has reached the per-day throttling limit for a subscription, or when a cloud service (authenticated or unauthenticated) has sent too many notifications per second. ")));
                 return;
             }	
             
 
             
-            if (callback != null)
-				callback(this, new SendNotificationResult(status.Notification, false, new WindowsPhoneNotificationSendFailureException(status)));
+			callback(this, new SendNotificationResult(status.Notification, false, new WindowsPhoneNotificationSendFailureException(status)));
 		}
 
 		public void Dispose()
