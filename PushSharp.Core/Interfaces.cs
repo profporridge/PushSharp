@@ -90,7 +90,7 @@ namespace PushSharp.Core
         /// <param name="applicationId">Arbitrary Application identifier to register this service with.  When queueing notifications you can specify the same Application identifier to ensure they get queued to the same service instance </param>
         /// <param name="raiseErrorOnDuplicateRegistrations">If set to <c>true</c> raises an error if there is an existing registration for the given notification type.</param>
         /// <typeparam name="TPushNotification">Type of notifications to register the service for</typeparam>
-        void RegisterService<TPushNotification>(IPushService pushService, string applicationId, bool raiseErrorOnDuplicateRegistrations = true) where TPushNotification : Notification;
+        void RegisterService<TPushNotification>(IPushService pushService, string applicationId, bool raiseErrorOnDuplicateRegistrations = true,  bool registerEvents = true) where TPushNotification : Notification;
 
         /// <summary>
         /// Registers the service to be eligible to handle queued notifications of the specified type
