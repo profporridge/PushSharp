@@ -88,7 +88,7 @@ namespace PushSharp.Apple
 			{
 				var subjectName = certificate.SubjectName.Name;
 
-				if (subjectName.Contains("Apple Production IOS Push Services"))
+                if (subjectName.Contains("Apple Production IOS Push Services") || subjectName.Contains("CN=VoIP Services"))
 					production = true;
 			}
 			
