@@ -56,6 +56,7 @@
     <Compile Include="PushBroker.cs" />
     <Compile Include="PushServiceBase.cs" />
     <Compile Include="PushServiceSettings.cs" />
+    <Compile Include="PushSharpLogger.cs" />
     <Compile Include="SendNotificationResult.cs" />
     <Compile Include="ListQueue.cs" />
     <Compile Include="ServiceRegistration.cs" />
