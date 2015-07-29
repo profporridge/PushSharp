@@ -202,7 +202,7 @@ namespace PushSharp.Core
 
 					//if (stopping)
 					//	return;
-
+                    
 					Log.Debug("{0} -> Checking Scale ({1} Channels Currently)", this, ChannelCount);
 
 					if (ServiceSettings.AutoScaleChannels && !this.cancelTokenSource.IsCancellationRequested)
@@ -307,7 +307,10 @@ namespace PushSharp.Core
 			}
 		}
 
-        public TimeSpan AverageQueueWaitTime
+
+        public double LastAverageQueueWaitTime { get; set; }
+
+	    public TimeSpan AverageQueueWaitTime
         {
             get 
 			{ 
@@ -327,12 +330,17 @@ namespace PushSharp.Core
 						return TimeSpan.Zero;
 
 				    var avg = from m in measurements select m.Milliseconds;
-				    try { return TimeSpan.FromMilliseconds(avg.Average()); }
+				    try
+				    {
+				        LastAverageQueueWaitTime = avg.Average();
+				        return TimeSpan.FromMilliseconds(LastAverageQueueWaitTime);
+				    }
 				    catch { return TimeSpan.Zero; }
 				}
 			}
         }
 
+        public double LastAverageSendTime { get; set; }
         public TimeSpan AverageSendTime
         {
             get
@@ -348,8 +356,12 @@ namespace PushSharp.Core
                     sendTimeMeasurements.RemoveAll(m => m.Timestamp < DateTime.UtcNow.AddSeconds(-30));
 
                     var avg = from s in sendTimeMeasurements select s.Milliseconds;
-					
-	                try { return TimeSpan.FromMilliseconds(avg.Average()); }
+
+                    try
+                    {
+                        LastAverageSendTime = avg.Average();
+                        return TimeSpan.FromMilliseconds(LastAverageSendTime);
+                    }
                     catch { return TimeSpan.Zero; }
                 }
             }
@@ -364,12 +376,14 @@ namespace PushSharp.Core
 	        }
 	    }
 
+        public long LastChannelCount { get; set; }
 	    public long ChannelCount
 	    {
 	        get
 	        {
 	            lock (channelsLock)
-	                return channels.Count;
+	                LastChannelCount = channels.Count;
+	                return LastChannelCount;
 	        }
 	    }
 
@@ -401,8 +415,14 @@ namespace PushSharp.Core
 						var chanWorker = new ChannelWorker(newChannel, DoChannelWork);
 						chanWorker.WorkerTask.ContinueWith(t =>
 						{
-							var ex = t.Exception;
-							Log.Error("Channel Worker Failed Task: " + ex.ToString());
+						    var flattened = t.Exception.Flatten();
+						    flattened.Handle(ex =>
+						    {
+						        Log.Error("Channel Worker Failed Task: " + ex.ToString());
+						        return true;
+						    });
+                            ScaleChannels(ChannelScaleAction.Create);
+                           // newChannel.Dispose();
 						}, TaskContinuationOptions.OnlyOnFaulted);
 							
 						channels.Add(chanWorker);
