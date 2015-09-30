@@ -100,9 +100,9 @@ namespace PushSharp.Core
 			stopping = false;
 		}
 
-		public void QueueNotification(INotification notification)
+		public void QueueNotification(INotification notification, bool highPriority = false)
 		{
-			QueueNotification(notification, false);
+			QueueNotification(notification, false, false, highPriority);
 		}
 
 
@@ -198,7 +198,7 @@ namespace PushSharp.Core
 					var avgQueueTime = (int)this.AverageQueueWaitTime.TotalMilliseconds;
 					var avgSendTime = (int)this.AverageSendTime.TotalMilliseconds;
 
-					Log.Debug("{0} -> Avg Queue Wait Time {1} ms, Avg Send Time {2} ms", this, avgQueueTime, avgSendTime);
+				//	Log.Debug("{0} -> Avg Queue Wait Time {1} ms, Avg Send Time {2} ms", this, avgQueueTime, avgSendTime);
 
 					//if (stopping)
 					//	return;
@@ -350,11 +350,11 @@ namespace PushSharp.Core
 
                 lock (sendTimeMeasurementsLock)
                 {
-                    while (sendTimeMeasurements.Count > 1000)
-                        sendTimeMeasurements.RemoveAt(0);
-
                     sendTimeMeasurements.RemoveAll(m => m.Timestamp < DateTime.UtcNow.AddSeconds(-30));
 
+                    while (sendTimeMeasurements.Count > 1000)
+                        sendTimeMeasurements.RemoveAt(0);
+                    
                     var avg = from s in sendTimeMeasurements select s.Milliseconds;
 
                     try
@@ -463,9 +463,7 @@ namespace PushSharp.Core
 
 		private void DoChannelWork(IPushChannel channel, CancellationTokenSource cancelTokenSource)
 		{
-		    string id = Guid.NewGuid().ToString();
-
-		    long sendCount = 0;
+            long sendCount = 0;
 
 			while (!cancelTokenSource.IsCancellationRequested)
 			{
@@ -499,8 +497,8 @@ namespace PushSharp.Core
 
 			    Interlocked.Increment(ref totalSendCount);
 
-                if (sendCount % 1000 == 0)
-					Log.Debug("{0}> Send Count: {1} ({2})", id, sendCount, Interlocked.Read(ref totalSendCount));
+              //  if (sendCount % 1000 == 0)
+			//		Log.Debug("Send Count: {0} ({1})", sendCount, Interlocked.Read(ref totalSendCount));
 
 				channel.SendNotification(notification, (sender, result) =>
 					{

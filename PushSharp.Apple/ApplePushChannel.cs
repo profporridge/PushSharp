@@ -370,7 +370,7 @@ namespace PushSharp.Apple
 				return;
 			}
 
-			Log.Info("Failed Notification on channel {1}: {0}",
+			Log.Warning("Failed Notification on channel {1}: {0}",
 				identifier,
 				_channelInstanceId);
 

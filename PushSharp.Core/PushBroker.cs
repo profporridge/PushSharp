@@ -94,7 +94,7 @@ namespace PushSharp
 		/// <param name="notification">Notification</param>
 		/// <param name="applicationId">Application identifier</param>
 		/// <typeparam name="TPushNotification">Type of Notification</typeparam>
-		public void QueueNotification<TPushNotification>(TPushNotification notification, string applicationId) where TPushNotification : Notification
+		public void QueueNotification<TPushNotification>(TPushNotification notification, string applicationId, bool highPriority = false) where TPushNotification : Notification
 		{
 			var services = GetRegistrations<TPushNotification> (applicationId);
 
@@ -102,7 +102,7 @@ namespace PushSharp
 				throw new IndexOutOfRangeException("There are no Registered Services that handle this type of Notification");
 
 			foreach (var s in services)
-				s.QueueNotification (notification);
+				s.QueueNotification (notification, highPriority);
 		}
 
 		/// <summary>

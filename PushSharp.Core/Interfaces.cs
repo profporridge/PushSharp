@@ -30,7 +30,7 @@ namespace PushSharp.Core
 		IPushServiceSettings ServiceSettings { get; }
 		IPushChannelSettings ChannelSettings { get; }
 		bool IsStopping { get; }
-		void QueueNotification(INotification notification);
+		void QueueNotification(INotification notification, bool highPriority = false);
 		void Stop(bool waitForQueueToFinish = true);
 	}
 
@@ -113,7 +113,7 @@ namespace PushSharp.Core
         /// <param name="notification">Notification</param>
         /// <param name="applicationId">Application identifier</param>
         /// <typeparam name="TPushNotification">Type of Notification</typeparam>
-        void QueueNotification<TPushNotification>(TPushNotification notification, string applicationId) where TPushNotification : Notification;
+        void QueueNotification<TPushNotification>(TPushNotification notification, string applicationId, bool highPriority = false) where TPushNotification : Notification;
 
         /// <summary>
         /// Gets all the registered services
