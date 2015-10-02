@@ -488,9 +488,9 @@ namespace PushSharp.Apple
 					}
 					catch (Exception exception)
 					{
-						Log.Debug("Exception while disconnecting TcpClient for instance {1}: {0}",
-							exception.ToString(),
-							_channelInstanceId);
+//						Log.Debug("Exception while disconnecting TcpClient for instance {1}: {0}",
+//							exception.ToString(),
+//							_channelInstanceId);
 					}
 					_client.Client.Dispose();
 				}

@@ -408,7 +408,7 @@ namespace PushSharp.Core
 
 				lock (channelsLock)
 				{
-					if (action == ChannelScaleAction.Create)
+					if (action == ChannelScaleAction.Create && ChannelCount < ServiceSettings.MaxAutoScaleChannels)
 					{
 						newChannel = this.PushChannelFactory.CreateChannel(this.ChannelSettings);
 
