@@ -621,7 +621,7 @@ namespace PushSharp.Apple
 							{
 								// We weren't connected, bump up the sentat timestamp
 								// so that we wait a while after reconnecting to expire this message
-								_sentNotifications[0].SentAt = DateTime.UtcNow;
+								_sentNotifications[0].Notification.SentAt = DateTime.UtcNow;
 								continueCleanup = false;
 							}
 						}
@@ -658,7 +658,7 @@ namespace PushSharp.Apple
 			bool continueCleanup;
 			var oldestNotification = _sentNotifications[0];
 
-			var millisecondsSinceSend = (DateTime.UtcNow - oldestNotification.SentAt).TotalMilliseconds;
+			var millisecondsSinceSend = (DateTime.UtcNow - oldestNotification.Notification.SentAt).TotalMilliseconds;
 			if (millisecondsSinceSend > _appleSettings.MillisecondsToWaitBeforeMessageDeclaredSuccess)
 			{
 				Interlocked.Decrement(ref _trackedNotificationCount);

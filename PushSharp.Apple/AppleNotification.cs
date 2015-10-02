@@ -13,6 +13,9 @@ namespace PushSharp.Apple
 	{
         const byte MAX_UTF8_SYMBOL_SIZE = 4;
 
+        public DateTime SentAt { get; set; }
+
+
 		static readonly object nextIdentifierLock = new object();
 		static int nextIdentifier = 0;
 
