@@ -102,7 +102,7 @@ namespace PushSharp.Core
 
 		public void QueueNotification(INotification notification, bool highPriority = false)
 		{
-			QueueNotification(notification, false, false, highPriority);
+			QueueNotification(notification, false, false, false);
 		}
 
 
@@ -141,7 +141,7 @@ namespace PushSharp.Core
 				if (evt != null)
 					evt(this, notification, new MaxSendAttemptsReachedException());
 
-				Log.Info("Notification ReQueued Too Many Times: {0}", notification.QueuedCount);
+				Log.Debug("Notification ReQueued Too Many Times: {0}", notification.QueuedCount);
 			}
 		}
 
