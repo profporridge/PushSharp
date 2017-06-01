@@ -1,9 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Json;
 using System.Text;
 using Newtonsoft.Json.Linq;
 
@@ -22,6 +18,7 @@ namespace PushSharp.Apple
 		public bool HideActionButton { get; set; }
 
 		public string Category { get; set; }
+		public bool HasMutableContent { get; set; }
 
 		public Dictionary<string, object[]> CustomItems
 		{
@@ -120,6 +117,7 @@ namespace PushSharp.Apple
 			if (!string.IsNullOrEmpty(this.Sound))
 				aps["sound"] = new JValue(this.Sound);
 
+            
             if (this.ContentAvailable.HasValue)
             {
                 aps["content-available"] = new JValue(this.ContentAvailable.Value);
@@ -136,7 +134,11 @@ namespace PushSharp.Apple
 				aps["category"] = new JValue(this.Category);
 			}
 
-		    if (aps.Count > 0)
+            if (HasMutableContent)
+                aps["mutable-content"] = new JValue(1);
+
+
+            if (aps.Count > 0)
 				json["aps"] = aps;
 
 			foreach (string key in this.CustomItems.Keys)
@@ -150,13 +152,13 @@ namespace PushSharp.Apple
 					json[key] = new JArray(this.CustomItems[key]);
 			}
 
-			string rawString = json.ToString(Newtonsoft.Json.Formatting.None, null);
+			var rawString = json.ToString(Newtonsoft.Json.Formatting.None, null);
 
-			StringBuilder encodedString = new StringBuilder();
+			var encodedString = new StringBuilder();
 			foreach (char c in rawString)
 			{
 				if ((int)c < 32 || (int)c > 127)
-					encodedString.Append("\\u" + String.Format("{0:x4}", Convert.ToUInt32(c)));
+					encodedString.Append("\\u" + $"{Convert.ToUInt32(c):x4}");
 				else
 					encodedString.Append(c);
 			}
