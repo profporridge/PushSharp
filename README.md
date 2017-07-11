@@ -1,6 +1,8 @@
 PushSharp [![Build Status](http://teamcity.codebetter.com/app/rest/builds/buildType:\(id:bt990\)/statusIcon)](http://teamcity.codebetter.com/project.html?projectId=project338&tab=projectOverview&guest=1)
 ===========================
 
+[![Join the chat at https://gitter.im/PofPushSharp/Lobby](https://badges.gitter.im/PofPushSharp/Lobby.svg)](https://gitter.im/PofPushSharp/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 A server-side library for sending Push Notifications to iOS (iPhone/iPad APNS), OSX (APNS 10.8+) Android (C2DM and GCM - Google Cloud Message), Chrome (GCM) Windows Phone, Windows 8, Blackberry (PAP), and Amazon (ADM) devices!
 
 ![PushSharp Diagram](https://github.com/Redth/PushSharp/raw/master/Resources/PushSharp-Diagram.png)
