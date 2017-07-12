@@ -24,6 +24,16 @@ namespace PushSharp.Apple
 		}
 
 		/// <summary>
+		/// Title of the Notification's Alert
+		/// </summary>
+		/// <remarks>Added in iOS 8.2</remarks>
+		public string Title
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
 		/// Body Text of the Notification's Alert
 		/// </summary>
 		public string Body
@@ -86,11 +96,23 @@ namespace PushSharp.Apple
 					|| !string.IsNullOrEmpty(LocalizedKey)
 					|| (LocalizedArgs != null && LocalizedArgs.Count > 0)
                     || !string.IsNullOrEmpty(LaunchImage)
+                    || !string.IsNullOrEmpty(Title)
                     )
 					return false;
 				else
 					return true;
 			}
+		}
+
+		public bool ShouldSerializeAsString(bool hideActionButton)
+		{
+			return !string.IsNullOrEmpty(Body)
+				&& string.IsNullOrEmpty(LocalizedKey)
+				&& string.IsNullOrEmpty(ActionLocalizedKey)
+				&& (LocalizedArgs == null || LocalizedArgs.Count <= 0)
+				&& string.IsNullOrEmpty(LaunchImage)
+				&& string.IsNullOrEmpty(Title)
+				&& !hideActionButton;
 		}
 	}
 }
