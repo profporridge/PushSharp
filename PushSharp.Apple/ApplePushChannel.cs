@@ -448,7 +448,7 @@ namespace PushSharp.Apple
 
 			try
 			{
-				_sslStream.AuthenticateAsClient(_appleSettings.Host, _certificates, SslProtocols.Tls, false);
+				_sslStream.AuthenticateAsClient(_appleSettings.Host, _certificates, SslProtocols.Tls11 | SslProtocols.Tls12, false);
 			}
 			catch (AuthenticationException exception)
 			{

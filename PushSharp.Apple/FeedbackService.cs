@@ -6,6 +6,7 @@ using System.Threading;
 using System.Net;
 using System.Net.Sockets;
 using System.Net.Security;
+using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
@@ -63,7 +64,7 @@ namespace PushSharp.Apple
                 (sender, cert, chain, sslErrs) => { return true; },
                 (sender, targetHost, localCerts, remoteCert, acceptableIssuers) => { return certificate; });
 
-            stream.AuthenticateAsClient(settings.FeedbackHost, certificates, System.Security.Authentication.SslProtocols.Tls, false);
+            stream.AuthenticateAsClient(settings.FeedbackHost, certificates, SslProtocols.Tls11 | SslProtocols.Tls12, false);
 
 
             //Set up
