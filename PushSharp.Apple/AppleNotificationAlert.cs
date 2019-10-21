@@ -19,7 +19,9 @@ namespace PushSharp.Apple
 			Body = null;
 			ActionLocalizedKey = null;
 			LocalizedKey = null;
+			TitleLocalizedKey = null;
 			LocalizedArgs = new List<object>();
+			TitleLocalizedArgs = new List<object>();
             LaunchImage = null;
 		}
 
@@ -61,6 +63,15 @@ namespace PushSharp.Apple
 		}
 
 		/// <summary>
+		/// Title's Localized Key
+		/// </summary>
+		public string TitleLocalizedKey
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
 		/// Localized Argument List
 		/// </summary>
 		public List<object> LocalizedArgs
@@ -69,9 +80,23 @@ namespace PushSharp.Apple
 			set;
 		}
 
+		/// <summary>
+		/// Title's Localized Argument List
+		/// </summary>
+		public List<object> TitleLocalizedArgs
+		{
+			get;
+			set;
+		}
+
 		public void AddLocalizedArgs(params object[] values)
 		{
 			this.LocalizedArgs.AddRange(values);
+		}
+
+		public void AddTitleLocalizedArgs(params object[] values)
+		{
+			this.TitleLocalizedArgs.AddRange(values);
 		}
 
         /// <summary>
@@ -94,7 +119,9 @@ namespace PushSharp.Apple
 				if (!string.IsNullOrEmpty(Body)
 					|| !string.IsNullOrEmpty(ActionLocalizedKey)
 					|| !string.IsNullOrEmpty(LocalizedKey)
+					|| !string.IsNullOrEmpty(TitleLocalizedKey)
 					|| (LocalizedArgs != null && LocalizedArgs.Count > 0)
+					|| (TitleLocalizedArgs != null && TitleLocalizedArgs.Count > 0)
                     || !string.IsNullOrEmpty(LaunchImage)
                     || !string.IsNullOrEmpty(Title)
                     )
@@ -109,7 +136,9 @@ namespace PushSharp.Apple
 			return !string.IsNullOrEmpty(Body)
 				&& string.IsNullOrEmpty(LocalizedKey)
 				&& string.IsNullOrEmpty(ActionLocalizedKey)
+				&& string.IsNullOrEmpty(TitleLocalizedKey)
 				&& (LocalizedArgs == null || LocalizedArgs.Count <= 0)
+				&& (TitleLocalizedArgs == null || TitleLocalizedArgs.Count <= 0)
 				&& string.IsNullOrEmpty(LaunchImage)
 				&& string.IsNullOrEmpty(Title)
 				&& !hideActionButton;

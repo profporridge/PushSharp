@@ -88,6 +88,12 @@ namespace PushSharp.Apple
 					if (!string.IsNullOrEmpty(this.Alert.Title))
 						jsonAlert["title"] = new JValue(this.Alert.Title);
 
+					if (!string.IsNullOrEmpty(this.Alert.TitleLocalizedKey))
+						jsonAlert["title-loc-key"] = new JValue(this.Alert.TitleLocalizedKey);
+
+					if (this.Alert.LocalizedArgs != null && this.Alert.TitleLocalizedArgs.Count > 0)
+						jsonAlert["title-loc-args"] = new JArray(this.Alert.TitleLocalizedArgs.ToArray());
+
 					if (!string.IsNullOrEmpty(this.Alert.LocalizedKey))
 						jsonAlert["loc-key"] = new JValue(this.Alert.LocalizedKey);
 
