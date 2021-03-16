@@ -10,17 +10,17 @@ namespace PushSharp.Apple
 	public class ApplePushChannelSettings : IPushChannelSettings
 	{
 		#region Constants
-		private const string APNS_SANDBOX_HOST = "api.sandbox.push.apple.com";
-		private const string APNS_PRODUCTION_HOST = "api.push.apple.com";
+		private const string APNS_SANDBOX_HOST = "gateway.sandbox.push.apple.com";
+		private const string APNS_PRODUCTION_HOST = "gateway.push.apple.com";
 
-		//private const string APNS_SANDBOX_FEEDBACK_HOST = "feedback.sandbox.push.apple.com";
-		//private const string APNS_PRODUCTION_FEEDBACK_HOST = "feedback.push.apple.com";
+		private const string APNS_SANDBOX_FEEDBACK_HOST = "feedback.sandbox.push.apple.com";
+		private const string APNS_PRODUCTION_FEEDBACK_HOST = "feedback.push.apple.com";
 
-		private const int APNS_SANDBOX_PORT = 2197;
-		private const int APNS_PRODUCTION_PORT = 2197;
+		private const int APNS_SANDBOX_PORT = 2195;
+		private const int APNS_PRODUCTION_PORT = 2195;
 
-		//private const int APNS_SANDBOX_FEEDBACK_PORT = 2196;
-		//private const int APNS_PRODUCTION_FEEDBACK_PORT = 2196;
+		private const int APNS_SANDBOX_FEEDBACK_PORT = 2196;
+		private const int APNS_PRODUCTION_FEEDBACK_PORT = 2196;
 		#endregion
 
 		public ApplePushChannelSettings(bool production, string certificateFile, string certificateFilePwd, bool disableCertificateCheck = false) 
@@ -55,11 +55,9 @@ namespace PushSharp.Apple
 		void Initialize(bool production, X509Certificate2 certificate, bool disableCertificateCheck)
 		{
 			this.Host = production ? APNS_PRODUCTION_HOST : APNS_SANDBOX_HOST;
+			this.FeedbackHost = production ? APNS_PRODUCTION_FEEDBACK_HOST : APNS_SANDBOX_FEEDBACK_HOST;
 			this.Port = production ? APNS_PRODUCTION_PORT : APNS_SANDBOX_PORT;
-			//this.FeedbackHost = production ? APNS_PRODUCTION_FEEDBACK_HOST : APNS_SANDBOX_FEEDBACK_HOST;
-			//this.FeedbackPort = production ? APNS_PRODUCTION_FEEDBACK_PORT : APNS_SANDBOX_FEEDBACK_PORT;
-			//this.FeedbackIntervalMinutes = 10;
-			//this.FeedbackTimeIsUTC = false;
+			this.FeedbackPort = production ? APNS_PRODUCTION_FEEDBACK_PORT : APNS_SANDBOX_FEEDBACK_PORT;
 
 			this.Certificate = certificate;
 
@@ -67,6 +65,8 @@ namespace PushSharp.Apple
 			this.ConnectionTimeout = 10000;
 			this.MaxConnectionAttempts = 3;
 
+			this.FeedbackIntervalMinutes = 10;
+			this.FeedbackTimeIsUTC = false;
 
             this.AdditionalCertificates = new List<X509Certificate2>();
             this.AddLocalAndMachineCertificateStores = false;
