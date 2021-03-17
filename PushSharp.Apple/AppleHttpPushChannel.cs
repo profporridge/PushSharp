@@ -1,9 +1,6 @@
 ﻿using PushSharp.Core;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace PushSharp.Apple
@@ -13,7 +10,6 @@ namespace PushSharp.Apple
         private readonly Guid _channelInstanceId = Guid.NewGuid();
         private readonly ApplePushChannelSettings _appleSettings;
         private readonly HttpClient _httpClient;
-
 
         public AppleHttpPushChannel(ApplePushChannelSettings channelSettings)
         {
@@ -39,9 +35,32 @@ namespace PushSharp.Apple
 
             try
             {
-                //var message = new HttpRequestMessage(HttpMethod.Post, $"/3/device/{}");
+                var message = new HttpRequestMessage(HttpMethod.Post, $"/3/device/{appleNotification.DeviceToken}");
+                message.Headers.Add("apns-id", appleNotification.Identifier.ToString());
+                message.Headers.Add("apns-expiration", appleNotification.ExpirationEpochSeconds.ToString());
+                message.Headers.Add("apns-push-type", Enum.GetName(typeof(AppleNotificationType), appleNotification.Type).ToLower());
+                //message.Headers.Add("apns-priority", ""); // default 10, send immediately
+                //message.Headers.Add("apns-topic", "");
+                //message.Headers.Add("apns-collapse-id", "");
 
-                // TODO build the payload
+                message.Content = new StringContent(appleNotification.Payload.ToString(), Encoding.UTF8, "application/json");
+
+                var response = _httpClient.SendAsync(message).ConfigureAwait(false).GetAwaiter().GetResult();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    if (callback != null)
+                        callback(this, new SendNotificationResult(notification));
+                }
+                else
+                {
+
+                }
+
+
+
+
+
                 // TODO error handling/retries?
                 // TODO feedservice logic (need to find the response status and call delegate)
 
@@ -58,6 +77,7 @@ namespace PushSharp.Apple
 
                 if (callback != null)
                 {
+                    // will requeue the notification
                     callback(this, new SendNotificationResult(notification, true, ex));
                 }
             }

@@ -82,6 +82,7 @@
     <Compile Include="AppleHttpPushChannel.cs" />
     <Compile Include="ApplePushChannelFactory.cs" />
     <Compile Include="ApplePushChannelSettings.cs" />
+    <Compile Include="AppleNotificationType.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="ApplePushChannel.cs" />
     <Compile Include="AppleNotification.cs" />

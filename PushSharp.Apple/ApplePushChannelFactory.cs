@@ -10,7 +10,8 @@ namespace PushSharp.Apple
 			if (!(channelSettings is ApplePushChannelSettings))
 				throw new ArgumentException("Channel Settings must be of type ApplePushChannelSettings");
 
-			return new ApplePushChannel(channelSettings as ApplePushChannelSettings);
+			//return new ApplePushChannel(channelSettings as ApplePushChannelSettings);
+			return new AppleHttpPushChannel(channelSettings as ApplePushChannelSettings);
 		}
 	}
 }
