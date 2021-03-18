@@ -1,6 +1,7 @@
 ﻿using PushSharp.Core;
 using System;
 using System.Net.Http;
+using System.Security.Authentication;
 using System.Text;
 
 namespace PushSharp.Apple
@@ -17,7 +18,7 @@ namespace PushSharp.Apple
 
             _appleSettings = channelSettings;
 
-            var requestHandler = new Http2CustomHandler();
+            var requestHandler = new WinHttpHandler() { SslProtocols = SslProtocols.Tls12 };
             requestHandler.ClientCertificates.Add(_appleSettings.Certificate);
             _httpClient = new HttpClient(requestHandler, true)
             {
@@ -35,7 +36,11 @@ namespace PushSharp.Apple
 
             try
             {
-                var message = new HttpRequestMessage(HttpMethod.Post, $"/3/device/{appleNotification.DeviceToken}");
+                var path = $"/3/device/{appleNotification.DeviceToken}";
+                var message = new HttpRequestMessage(HttpMethod.Post, path);
+                message.Version = new Version(2, 0);
+                message.Headers.TryAddWithoutValidation(":method", "POST");
+                message.Headers.TryAddWithoutValidation(":path", path);
                 message.Headers.Add("apns-id", appleNotification.Identifier.ToString());
                 message.Headers.Add("apns-expiration", appleNotification.ExpirationEpochSeconds.ToString());
                 message.Headers.Add("apns-push-type", Enum.GetName(typeof(AppleNotificationType), appleNotification.Type).ToLower());
@@ -43,7 +48,7 @@ namespace PushSharp.Apple
                 //message.Headers.Add("apns-topic", "");
                 //message.Headers.Add("apns-collapse-id", "");
 
-                message.Content = new StringContent(appleNotification.Payload.ToString(), Encoding.UTF8, "application/json");
+                message.Content = new StringContent(appleNotification.Payload.ToString());
 
                 var response = _httpClient.SendAsync(message).ConfigureAwait(false).GetAwaiter().GetResult();
 
@@ -54,7 +59,11 @@ namespace PushSharp.Apple
                 }
                 else
                 {
-
+                    if (callback != null)
+                    {
+                        // discart notification
+                        callback(this, new SendNotificationResult(notification, false, new Exception("APNs notification discarted.")));
+                    }
                 }
 
 
