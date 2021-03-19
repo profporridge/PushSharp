@@ -43,22 +43,25 @@ namespace PushSharp.Apple
 
             try
             {
+                HttpResponseMessage response;
+
                 var path = $"/3/device/{appleNotification.DeviceToken}";
-                var message = new HttpRequestMessage(HttpMethod.Post, path);
-                message.Version = new Version(2, 0);
-                message.Headers.TryAddWithoutValidation(":method", "POST");
-                message.Headers.TryAddWithoutValidation(":path", path);
-                message.Headers.Add("apns-expiration", appleNotification.ExpirationEpochSeconds.ToString());
-                message.Headers.Add("apns-push-type", Enum.GetName(typeof(AppleNotificationType), appleNotification.Type).ToLower());
-                message.Headers.Add("authorization", $"bearer {GetJwtToken()}");
-                message.Headers.Add("apns-topic", appleNotification.Type == AppleNotificationType.Voip ? $"{AppleHttpPushChannelSettings.BundleId}.voip" : AppleHttpPushChannelSettings.BundleId);
-                //message.Headers.Add("apns-id", ); -> apple creates one if not provided
-                //message.Headers.Add("apns-priority", ""); -> apple default 10, send immediately
-                //message.Headers.Add("apns-collapse-id", ""); -> not used
+                using (var message = new HttpRequestMessage(HttpMethod.Post, path))
+                {
+                    message.Version = new Version(2, 0);
+                    message.Headers.TryAddWithoutValidation(":method", "POST");
+                    message.Headers.TryAddWithoutValidation(":path", path);
+                    message.Headers.Add("apns-expiration", appleNotification.ExpirationEpochSeconds.ToString());
+                    message.Headers.Add("apns-push-type", Enum.GetName(typeof(AppleNotificationType), appleNotification.Type).ToLower());
+                    message.Headers.Add("authorization", $"bearer {GetJwtToken()}");
+                    message.Headers.Add("apns-topic", appleNotification.Type == AppleNotificationType.Voip ? $"{AppleHttpPushChannelSettings.BundleId}.voip" : AppleHttpPushChannelSettings.BundleId);
+                    //message.Headers.Add("apns-id", ); -> apple creates one if not provided
+                    //message.Headers.Add("apns-priority", ""); -> apple default 10, send immediately
+                    //message.Headers.Add("apns-collapse-id", ""); -> not used
 
-                message.Content = new StringContent(appleNotification.Payload.ToString());
-
-                var response = _httpClient.SendAsync(message).ConfigureAwait(false).GetAwaiter().GetResult();
+                    message.Content = new StringContent(appleNotification.Payload.ToString());
+                    response = _httpClient.SendAsync(message).ConfigureAwait(false).GetAwaiter().GetResult();
+                }
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -80,33 +83,26 @@ namespace PushSharp.Apple
                     {
                         if (callback != null)
                         {
-                            var result = new SendNotificationResult(notification, false, new Exception("Device token no longe available on APNs."))
+                            SendNotificationResult result;
+                            if (_appleSettings.EnableDeleteTokenOn410Response)
                             {
-                                IsSubscriptionExpired = true,
-                                OldSubscriptionId = appleNotification.DeviceToken
-                            };
+                                result = new SendNotificationResult(notification, false, new Exception("Device token no longer available on APNs."))
+                                {
+                                    IsSubscriptionExpired = true,
+                                    OldSubscriptionId = appleNotification.DeviceToken
+                                };
+                            }
+                            else
+                            {
+                                result = new SendNotificationResult(notification, false);
+                            }
                             callback(this, result);
                             return;
                         }
                     }
 
-                    if (response.StatusCode == HttpStatusCode.InternalServerError)
-                    {
-                        // TODO
-                        // needs a recycle of http client?
-                        // retry notification
-                    }
-
-                    if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
-                    {
-                        // TODO
-                        // needs a recycle of http client?
-                        // retry notification
-                    }
-
-                    // TODO recycle of http client?
-
                     var retryNotification = true;
+                    // this response are non recoverable, do not retry the notification
                     switch (response.StatusCode)
                     {
                         case HttpStatusCode.Forbidden:
@@ -122,7 +118,7 @@ namespace PushSharp.Apple
 
                     if (callback != null)
                     {
-                        callback(this, new SendNotificationResult(notification, retryNotification, new Exception("Error during APNS Send")));
+                        callback(this, new SendNotificationResult(notification, retryNotification, new Exception("Error during APNS Send.")));
                     }
                 }
             }
