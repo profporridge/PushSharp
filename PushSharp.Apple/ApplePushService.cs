@@ -55,7 +55,7 @@ namespace PushSharp.Apple
             }
 
             // Apple has documented that they only want us to use 20 connections to them
-            base.ServiceSettings.MaxAutoScaleChannels = 20;
+            //base.ServiceSettings.MaxAutoScaleChannels = 20;
         }
 
         /// fired exclusively by the feedback service. 

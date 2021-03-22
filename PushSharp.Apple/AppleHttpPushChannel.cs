@@ -14,9 +14,10 @@ namespace PushSharp.Apple
         private readonly Guid _channelInstanceId = Guid.NewGuid();
         private readonly AppleHttpPushChannelSettings _appleSettings;
         private readonly HttpClient _httpClient;
+        private readonly CngKey _privateKey;
 
-        private string _currentJtw;
-        private DateTime? _jtwCreationDate;
+        private string _currentJWT;
+        private DateTime? _JWTCreationDate;
 
         private object _lock = new object();
 
@@ -25,6 +26,7 @@ namespace PushSharp.Apple
             Log.Debug("Creating ApplePushChannel instance " + _channelInstanceId);
 
             _appleSettings = channelSettings;
+            _privateKey = CngKey.Import(Convert.FromBase64String(channelSettings.PrivateKey), CngKeyBlobFormat.Pkcs8PrivateBlob);
 
             var requestHandler = new WinHttpHandler() { SslProtocols = SslProtocols.Tls12 };
             _httpClient = new HttpClient(requestHandler, true)
@@ -54,7 +56,7 @@ namespace PushSharp.Apple
                     message.Headers.Add("apns-expiration", appleNotification.ExpirationEpochSeconds.ToString());
                     message.Headers.Add("apns-push-type", Enum.GetName(typeof(AppleNotificationType), appleNotification.Type).ToLower());
                     message.Headers.Add("authorization", $"bearer {GetJwtToken()}");
-                    message.Headers.Add("apns-topic", appleNotification.Type == AppleNotificationType.Voip ? $"{AppleHttpPushChannelSettings.BundleId}.voip" : AppleHttpPushChannelSettings.BundleId);
+                    message.Headers.Add("apns-topic", appleNotification.Type == AppleNotificationType.Voip ? $"{_appleSettings.BundleId}.voip" : _appleSettings.BundleId);
                     //message.Headers.Add("apns-id", ); -> apple creates one if not provided
                     //message.Headers.Add("apns-priority", ""); -> apple default 10, send immediately
                     //message.Headers.Add("apns-collapse-id", ""); -> not used
@@ -139,32 +141,39 @@ namespace PushSharp.Apple
 
         private string GetJwtToken()
         {
+            if (!string.IsNullOrEmpty(_currentJWT))
+            {
+                // checks expiration (50m) - APNs expects the token to have a TTL between 20m and 60m
+                var tokenExpiration = DateTime.UtcNow - _JWTCreationDate.Value;
+                if (tokenExpiration.TotalMinutes < 50)
+                    return _currentJWT;
+            }
+
+            return CreateJWTToken();
+        }
+
+        private string CreateJWTToken()
+        {
             lock (_lock)
             {
-                if (!string.IsNullOrEmpty(_currentJtw))
-                {
-                    // checks expiration (50m)
-                    var tokenExpiration = DateTime.UtcNow - _jtwCreationDate.Value;
-                    if (tokenExpiration.TotalMinutes < 50)
-                        return _currentJtw;
-                }
-
-                // create a new token
                 var dateTimeUtcNow = DateTime.UtcNow;
+                var tokenExpiration = dateTimeUtcNow - _JWTCreationDate.Value;
+                if (tokenExpiration.TotalMinutes < 50)
+                    return _currentJWT;
+
                 var header = JsonConvert.SerializeObject(new { alg = "ES256", kid = _appleSettings.KeyId });
                 var payload = JsonConvert.SerializeObject(new { iss = _appleSettings.TeamId, iat = ToEpoch(dateTimeUtcNow) });
 
-                var key = CngKey.Import(Convert.FromBase64String(_appleSettings.PrivateKey), CngKeyBlobFormat.Pkcs8PrivateBlob);
-                using (var dsa = new ECDsaCng(key))
+                using (var dsa = new ECDsaCng(_privateKey))
                 {
                     dsa.HashAlgorithm = CngAlgorithm.Sha256;
                     var headerBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(header));
                     var payloadBasae64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
                     var unsignedJwtData = $"{headerBase64}.{payloadBasae64}";
                     var signature = dsa.SignData(Encoding.UTF8.GetBytes(unsignedJwtData));
-                    _jtwCreationDate = dateTimeUtcNow;
-                    _currentJtw = $"{unsignedJwtData}.{Convert.ToBase64String(signature)}";
-                    return _currentJtw;
+                    _JWTCreationDate = dateTimeUtcNow;
+                    _currentJWT = $"{unsignedJwtData}.{Convert.ToBase64String(signature)}";
+                    return _currentJWT;
                 }
             }
         }
