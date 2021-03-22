@@ -157,9 +157,12 @@ namespace PushSharp.Apple
             lock (_lock)
             {
                 var dateTimeUtcNow = DateTime.UtcNow;
-                var tokenExpiration = dateTimeUtcNow - _JWTCreationDate.Value;
-                if (tokenExpiration.TotalMinutes < 50)
-                    return _currentJWT;
+                if (_JWTCreationDate.HasValue)
+                {
+                    var tokenExpiration = dateTimeUtcNow - _JWTCreationDate.Value;
+                    if (tokenExpiration.TotalMinutes < 50)
+                        return _currentJWT;
+                }
 
                 var header = JsonConvert.SerializeObject(new { alg = "ES256", kid = _appleSettings.KeyId });
                 var payload = JsonConvert.SerializeObject(new { iss = _appleSettings.TeamId, iat = ToEpoch(dateTimeUtcNow) });
