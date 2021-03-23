@@ -10,9 +10,9 @@ namespace PushSharp.Apple
         public string TeamId { get; private set; }
         public string KeyId { get; private set; }
         public string PrivateKey { get; private set; }
-        public bool EnableDeleteTokenOn410Response { get; private set; }
+        public bool EnableDeleteToken { get; private set; }
 
-        public AppleHttpPushChannelSettings(string host, int port, string teamId, string keyId, string privateKey, string bundleId, bool enableDeleteTokenOn410Response)
+        public AppleHttpPushChannelSettings(string host, int port, string teamId, string keyId, string privateKey, string bundleId, bool enableDeleteToken)
         {
             Host = host;
             Port = port;
@@ -20,7 +20,7 @@ namespace PushSharp.Apple
             KeyId = keyId;
             PrivateKey = privateKey;
             BundleId = bundleId;
-            EnableDeleteTokenOn410Response = enableDeleteTokenOn410Response;
+            EnableDeleteToken = enableDeleteToken;
 
             Initialize();
         }

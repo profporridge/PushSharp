@@ -79,48 +79,21 @@ namespace PushSharp.Apple
                                         response.StatusCode,
                                         string.IsNullOrEmpty(responseBody) ? "No response body" : responseBody);
 
-                    // Should we delete the device token when: HttpStatusCode.BadRequest - BadDeviceToken - The specified device token is invalid.Verify that the request contains a valid token and that the token matches the environment.
-                    // special case to call delete device token, means that device token it no longer available on apple side
-                    if (response.StatusCode == HttpStatusCode.Gone)
+                    if (response.StatusCode == HttpStatusCode.Gone && callback != null)
                     {
-                        if (callback != null)
+                        var result = new SendNotificationResult(notification, false, new Exception("Device token no longer available on APNs."))
                         {
-                            SendNotificationResult result;
-                            if (_appleSettings.EnableDeleteTokenOn410Response)
-                            {
-                                result = new SendNotificationResult(notification, false, new Exception("Device token no longer available on APNs."))
-                                {
-                                    IsSubscriptionExpired = true,
-                                    OldSubscriptionId = appleNotification.DeviceToken
-                                };
-                            }
-                            else
-                            {
-                                result = new SendNotificationResult(notification, false);
-                            }
-                            callback(this, result);
-                            return;
-                        }
-                    }
-
-                    var retryNotification = true;
-                    // this response are non recoverable, do not retry the notification
-                    switch (response.StatusCode)
-                    {
-                        case HttpStatusCode.Forbidden:
-                        case HttpStatusCode.BadRequest:
-                        case HttpStatusCode.NotFound:
-                        case HttpStatusCode.MethodNotAllowed:
-                        case HttpStatusCode.RequestEntityTooLarge:
-                            retryNotification = false;
-                            break;
-                        default:
-                            break;
+                            IsSubscriptionExpired = true,
+                            OldSubscriptionId = appleNotification.DeviceToken,
+                            SubscriptionExpiryUtc = DateTime.UtcNow
+                        };
+                        callback(this, result);
+                        return;
                     }
 
                     if (callback != null)
                     {
-                        callback(this, new SendNotificationResult(notification, retryNotification,
+                        callback(this, new SendNotificationResult(notification, false,
                                     new Exception("Error during APNS Send.", new Exception(string.Format("Error during APNS Send with channel {0}: {1} -> Code {2} - {3}",
                                         _channelInstanceId,
                                         appleNotification.Identifier,
