@@ -120,7 +120,12 @@ namespace PushSharp.Apple
 
                     if (callback != null)
                     {
-                        callback(this, new SendNotificationResult(notification, retryNotification, new Exception("Error during APNS Send.")));
+                        callback(this, new SendNotificationResult(notification, retryNotification,
+                                    new Exception("Error during APNS Send.", new Exception(string.Format("Error during APNS Send with channel {0}: {1} -> Code {2} - {3}",
+                                        _channelInstanceId,
+                                        appleNotification.Identifier,
+                                        response.StatusCode,
+                                        string.IsNullOrEmpty(responseBody) ? "No response body" : responseBody)))));
                     }
                 }
             }
