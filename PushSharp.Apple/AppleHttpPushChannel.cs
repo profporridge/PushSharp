@@ -17,7 +17,7 @@ namespace PushSharp.Apple
         private readonly CngKey _privateKey;
 
         private string _currentJWT;
-        private DateTime? _JWTCreationDate;
+        private DateTime? _JWTExpiryDate;
 
         private object _lock = new object();
 
@@ -119,12 +119,9 @@ namespace PushSharp.Apple
 
         private string GetJwtToken()
         {
-            if (!string.IsNullOrEmpty(_currentJWT))
+            if (!string.IsNullOrEmpty(_currentJWT) && _JWTExpiryDate.HasValue && DateTime.UtcNow <= _JWTExpiryDate.Value)
             {
-                // checks expiration (50m) - APNs expects the token to have a TTL between 20m and 60m
-                var tokenExpiration = DateTime.UtcNow - _JWTCreationDate.Value;
-                if (tokenExpiration.TotalMinutes < 50)
-                    return _currentJWT;
+                return _currentJWT;
             }
 
             return CreateJWTToken();
@@ -134,14 +131,12 @@ namespace PushSharp.Apple
         {
             lock (_lock)
             {
-                var dateTimeUtcNow = DateTime.UtcNow;
-                if (_JWTCreationDate.HasValue)
+                if (_JWTExpiryDate.HasValue && DateTime.UtcNow <= _JWTExpiryDate.Value)
                 {
-                    var tokenExpiration = dateTimeUtcNow - _JWTCreationDate.Value;
-                    if (tokenExpiration.TotalMinutes < 50)
-                        return _currentJWT;
+                    return _currentJWT;
                 }
 
+                var dateTimeUtcNow = DateTime.UtcNow;
                 var header = JsonConvert.SerializeObject(new { alg = "ES256", kid = _appleSettings.KeyId });
                 var payload = JsonConvert.SerializeObject(new { iss = _appleSettings.TeamId, iat = ToEpoch(dateTimeUtcNow) });
 
@@ -149,10 +144,10 @@ namespace PushSharp.Apple
                 {
                     dsa.HashAlgorithm = CngAlgorithm.Sha256;
                     var headerBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(header));
-                    var payloadBasae64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
-                    var unsignedJwtData = $"{headerBase64}.{payloadBasae64}";
+                    var payloadBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
+                    var unsignedJwtData = $"{headerBase64}.{payloadBase64}";
                     var signature = dsa.SignData(Encoding.UTF8.GetBytes(unsignedJwtData));
-                    _JWTCreationDate = dateTimeUtcNow;
+                    _JWTExpiryDate = dateTimeUtcNow.AddMinutes(50); // adds expiration of 50m for the token - APNs expects the token to have a TTL between 20m and 60m
                     _currentJWT = $"{unsignedJwtData}.{Convert.ToBase64String(signature)}";
                     return _currentJWT;
                 }
