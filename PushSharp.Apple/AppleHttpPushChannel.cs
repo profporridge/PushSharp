@@ -73,11 +73,12 @@ namespace PushSharp.Apple
                 else
                 {
                     var responseBody = response.Content.ReadAsStringAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-                    Log.Error("Error during APNS Send with channel {0}: {1} -> Code {2} - {3}",
+                    Log.Error("Error during APNS Send with channel {0}: {1} -> Code {2} - {3} with Device token {4}.",
                                         _channelInstanceId,
                                         appleNotification.Identifier,
                                         response.StatusCode,
-                                        string.IsNullOrEmpty(responseBody) ? "No response body" : responseBody);
+                                        string.IsNullOrEmpty(responseBody) ? "No response body" : responseBody,
+                                        appleNotification.DeviceToken);
 
                     if (response.StatusCode == HttpStatusCode.Gone && callback != null)
                     {
@@ -94,20 +95,22 @@ namespace PushSharp.Apple
                     if (callback != null)
                     {
                         callback(this, new SendNotificationResult(notification, false,
-                                    new Exception("Error during APNS Send.", new Exception(string.Format("Error during APNS Send with channel {0}: {1} -> Code {2} - {3}",
+                                    new Exception("Error during APNS Send.", new Exception(string.Format("Error during APNS Send with channel {0}: {1} -> Code {2} - {3} with Device token {4}.",
                                         _channelInstanceId,
                                         appleNotification.Identifier,
                                         response.StatusCode,
-                                        string.IsNullOrEmpty(responseBody) ? "No response body" : responseBody)))));
+                                        string.IsNullOrEmpty(responseBody) ? "No response body" : responseBody,
+                                        appleNotification.DeviceToken)))));
                     }
                 }
             }
             catch (Exception ex)
             {
-                Log.Error("Exception during APNS Send with channel {2}: {0} -> {1}",
+                Log.Error("Exception during APNS Send with channel {2}: {0} -> {1} with Device token {2}.",
                     appleNotification.Identifier,
                     ex,
-                    _channelInstanceId);
+                    _channelInstanceId,
+                    appleNotification.DeviceToken);
 
                 if (callback != null)
                 {
